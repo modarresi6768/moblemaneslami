@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { navItems } from "@/lib/site-data";
 
 function Brand() {
-  return <Link to="/" className="group flex items-center gap-3" aria-label="مبلمان اسلامی، صفحه اصلی"><span className="grid size-11 place-items-center rounded-full border border-gold text-lg font-bold text-primary transition-colors group-hover:bg-gold">م</span><span><strong className="block text-lg text-primary">مبلمان اسلامی</strong><small className="text-[10px] text-muted-foreground">اصالت در متن زندگی</small></span></Link>;
+  return <Link to="/" className="group flex items-center gap-3" aria-label="مبلمان اسلامی، صفحه اصلی"><span className="grid size-11 place-items-center rounded-full border border-gold text-lg font-bold text-primary transition-colors group-hover:bg-gold">م</span><span><strong className="font-brand block pb-1 text-xl font-bold leading-8 text-primary">مبلمان اسلامی</strong><small className="block text-[10px] text-muted-foreground">اصالت در متن زندگی</small></span></Link>;
 }
 
 export function Header() {
