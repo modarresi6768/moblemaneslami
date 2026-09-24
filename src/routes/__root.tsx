@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Footer, Header } from "../components/site-shell";
+import { TryAtHome } from "../components/try-at-home";
 
 function NotFoundComponent() {
   return (
@@ -121,6 +122,7 @@ function RootComponent() {
       <Header />
       <main><Outlet /></main>
       <Footer />
+      <TryAtHome />
     </QueryClientProvider>
   );
 }
