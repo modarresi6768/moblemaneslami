@@ -4,6 +4,18 @@ import { Button } from "@/components/ui/button";
 import { products } from "@/lib/site-data";
 
 const EVENT = "open-try-at-home";
+
+const fabricColors = [
+  { id: "ivory", label: "کرم استخوانی", className: "bg-fabric-ivory" },
+  { id: "beige", label: "بژ", className: "bg-fabric-beige" },
+  { id: "olive", label: "زیتونی", className: "bg-fabric-olive" },
+  { id: "emerald", label: "سبز یشمی", className: "bg-fabric-emerald" },
+  { id: "petrol", label: "آبی نفتی", className: "bg-fabric-petrol" },
+  { id: "gray", label: "طوسی", className: "bg-fabric-gray" },
+  { id: "burgundy", label: "زرشکی", className: "bg-fabric-burgundy" },
+  { id: "walnut", label: "قهوه‌ای", className: "bg-fabric-walnut" },
+] as const;
+
 export function openTryAtHome(index = 0) {
   window.dispatchEvent(new CustomEvent(EVENT, { detail: index }));
 }
@@ -15,6 +27,7 @@ export function TryAtHomeButton({ index, className = "" }: { index: number; clas
 export function TryAtHome() {
   const [open, setOpen] = useState(false);
   const [sofa, setSofa] = useState(0);
+  const [fabricColor, setFabricColor] = useState<(typeof fabricColors)[number]["id"]>("ivory");
   const [room, setRoom] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
@@ -22,7 +35,7 @@ export function TryAtHome() {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const handler = (e: Event) => { setSofa((e as CustomEvent<number>).detail ?? 0); setResult(null); setMessage(null); setOpen(true); };
+    const handler = (e: Event) => { setSofa((e as CustomEvent<number>).detail ?? 0); setFabricColor("ivory"); setResult(null); setMessage(null); setOpen(true); };
     window.addEventListener(EVENT, handler);
     return () => window.removeEventListener(EVENT, handler);
   }, []);
@@ -36,12 +49,15 @@ export function TryAtHome() {
 
   const run = async () => {
     if (!room) return;
+    const selectedSofa = products[sofa];
+    if (!selectedSofa) return;
     setLoading(true); setMessage(null); setResult(null);
     try {
-      const sofaBlob = await (await fetch(products[sofa]!.image)).blob();
+      const sofaBlob = await (await fetch(selectedSofa.image)).blob();
       const form = new FormData();
       form.append("room", room);
       form.append("sofa", new File([sofaBlob], "sofa.jpg", { type: sofaBlob.type || "image/jpeg" }));
+      form.append("color", fabricColor);
       const res = await fetch("/api/try-sofa", { method: "POST", body: form });
       const json = (await res.json()) as { ok: boolean; image?: string; message?: string };
       if (json.ok && json.image) setResult(json.image);
@@ -62,7 +78,21 @@ export function TryAtHome() {
         <h2 className="mt-1 text-2xl font-bold text-primary">مبل را در خانه‌ی من ببین</h2>
         <p className="mt-2 text-sm text-muted-foreground">۱. عکس پذیرایی خود را انتخاب کنید ۲. مبل دلخواه را برگزینید ۳. نتیجه را ببینید.</p>
 
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">{products.map((p, i) => <button type="button" key={p.title} onClick={() => { setSofa(i); setResult(null); }} className={`overflow-hidden rounded-md border-2 text-right transition ${sofa === i ? "border-gold shadow-gold" : "border-border"}`}><img src={p.image} alt={p.title} className="aspect-[4/3] w-full object-cover" /><span className="block p-2 text-xs font-bold text-primary">{p.title}</span></button>)}</div>
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">{products.map((p, i) => <button type="button" key={p.title} onClick={() => { setSofa(i); setResult(null); }} aria-pressed={sofa === i} className={`overflow-hidden rounded-md border-2 text-right transition ${sofa === i ? "border-gold shadow-gold" : "border-border"}`}><img src={p.image} alt={p.title} className="aspect-[4/3] w-full object-cover" /><span className="block p-2 text-xs font-bold text-primary">{p.title}</span></button>)}</div>
+
+        <fieldset className="mt-5 rounded-lg border border-border bg-secondary/45 p-4">
+          <legend className="px-2 text-sm font-bold text-primary">رنگ پارچه مبل را انتخاب کنید</legend>
+          <div className="grid grid-cols-4 gap-3 sm:grid-cols-8">
+            {fabricColors.map((color) => {
+              const selected = fabricColor === color.id;
+              return <button key={color.id} type="button" onClick={() => { setFabricColor(color.id); setResult(null); }} aria-label={`رنگ ${color.label}`} aria-pressed={selected} title={color.label} className={`group flex min-w-0 flex-col items-center gap-2 rounded-md p-1.5 text-center transition ${selected ? "bg-background shadow-sm ring-2 ring-gold" : "hover:bg-background/70"}`}>
+                <span className={`size-9 rounded-full border-2 ${color.className} ${selected ? "border-primary" : "border-background shadow-sm"}`} aria-hidden="true" />
+                <span className="w-full text-[10px] font-semibold leading-4 text-primary sm:text-xs">{color.label}</span>
+              </button>;
+            })}
+          </div>
+          <p className="mt-3 text-center text-xs text-muted-foreground">رنگ انتخابی: <strong className="text-primary">{fabricColors.find((color) => color.id === fabricColor)?.label}</strong></p>
+        </fieldset>
 
         <label className="mt-5 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gold/60 bg-secondary p-4 text-center text-sm text-primary hover:bg-secondary/70">
           <input type="file" accept="image/*" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
