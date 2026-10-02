@@ -14,7 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as ProductsRouteImport } from './routes/products'
-import { Route as ApiTrySofaRouteImport } from './routes/api/try-sofa'
+import { Route as ProductsProductIdRouteImport } from './routes/products.$productId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -41,10 +41,10 @@ const ProductsRoute = ProductsRouteImport.update({
   path: '/products',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiTrySofaRoute = ApiTrySofaRouteImport.update({
-  id: '/api/try-sofa',
-  path: '/api/try-sofa',
-  getParentRoute: () => rootRouteImport,
+const ProductsProductIdRoute = ProductsProductIdRouteImport.update({
+  id: '/$productId',
+  path: '/$productId',
+  getParentRoute: () => ProductsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -52,16 +52,16 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
-  '/products': typeof ProductsRoute
-  '/api/try-sofa': typeof ApiTrySofaRoute
+  '/products': typeof ProductsRouteWithChildren
+  '/products/$productId': typeof ProductsProductIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
-  '/products': typeof ProductsRoute
-  '/api/try-sofa': typeof ApiTrySofaRoute
+  '/products': typeof ProductsRouteWithChildren
+  '/products/$productId': typeof ProductsProductIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -69,15 +69,26 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
   '/gallery': typeof GalleryRoute
-  '/products': typeof ProductsRoute
-  '/api/try-sofa': typeof ApiTrySofaRoute
+  '/products': typeof ProductsRouteWithChildren
+  '/products/$productId': typeof ProductsProductIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/about' | '/contact' | '/gallery' | '/products' | '/api/try-sofa'
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/gallery'
+    | '/products'
+    | '/products/$productId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/contact' | '/gallery' | '/products' | '/api/try-sofa'
+  to:
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/gallery'
+    | '/products'
+    | '/products/$productId'
   id:
     | '__root__'
     | '/'
@@ -85,7 +96,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/gallery'
     | '/products'
-    | '/api/try-sofa'
+    | '/products/$productId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -93,8 +104,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
   GalleryRoute: typeof GalleryRoute
-  ProductsRoute: typeof ProductsRoute
-  ApiTrySofaRoute: typeof ApiTrySofaRoute
+  ProductsRoute: typeof ProductsRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -134,23 +144,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/try-sofa': {
-      id: '/api/try-sofa'
-      path: '/api/try-sofa'
-      fullPath: '/api/try-sofa'
-      preLoaderRoute: typeof ApiTrySofaRouteImport
-      parentRoute: typeof rootRouteImport
+    '/products/$productId': {
+      id: '/products/$productId'
+      path: '/$productId'
+      fullPath: '/products/$productId'
+      preLoaderRoute: typeof ProductsProductIdRouteImport
+      parentRoute: typeof ProductsRoute
     }
   }
 }
+
+interface ProductsRouteChildren {
+  ProductsProductIdRoute: typeof ProductsProductIdRoute
+}
+
+const ProductsRouteChildren: ProductsRouteChildren = {
+  ProductsProductIdRoute: ProductsProductIdRoute,
+}
+
+const ProductsRouteWithChildren = ProductsRoute._addFileChildren(
+  ProductsRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   ContactRoute: ContactRoute,
   GalleryRoute: GalleryRoute,
-  ProductsRoute: ProductsRoute,
-  ApiTrySofaRoute: ApiTrySofaRoute,
+  ProductsRoute: ProductsRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
